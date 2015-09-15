@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Chaos IOU</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+		<script type="text/javascript">
+			google.load('visualization', '1', {'packages':['corechart', 'table']});
+			google.setOnLoadCallback(initialize);
+
+			var dpsTable;
+			var dpsJSON;
+			var playerData = [];
+
+			function initialize() {
+				var opts = {sendMethod: 'auto'};
+				// Replace the data source URL on next line with your data source URL.
+				var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/1YAh8T6ZsOSiLVLc9094MhTkJN2mPn6LciWJWgjxsSbs/gviz/tq?sheet=DMGCalc&range=B233:T236', opts);
+
+				query.setQuery('select *');
+
+				// Send the query with a callback function.
+				query.send(handleQueryResponse);
+			}
+
+			function handleQueryResponse(response) {
+				// Called when the query response is returned.
+				if (response.isError()) {
+					alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+					return;
+				}
+
+				dpsTable = response.getDataTable();
+				drawTable(dpsTable);
+
+				console.log(dpsTable.toJSON());
+				dpsJSON = $.parseJSON(dpsTable.toJSON());
+
+				$.each(dpsJSON.cols, function(i, v){
+					playerData.push({"name": v.label});
+				});
+
+				$.each(playerData, function(i, player){
+					player.soloDPS	= dpsJSON.rows[0].c[i].v;
+					player.partyDPS	= dpsJSON.rows[1].c[i].v;
+				});
+
+				console.log(playerData);
+			}
+
+			function drawTable(data){
+				var tableVis = new google.visualization.Table(document.getElementById('tableContainer'));
+				tableVis.draw(data, {showRowNumber: false, width: '100%', height: '100%'});
+			}
+
+			$(document).ready(function(){
+			});
+		</script>
+		<style>
+			#outerDiv {
+				height: 100%;
+				width:	100%;
+			}
+
+			#innerDiv {
+				width:			1100px;
+				margin:			auto;
+				border:			1px solid black;
+				border-radius:	6px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="outerDiv">
+			<div id="innerDiv">
+			</div>
+		</div>
+	</body>
+</html>
